@@ -32,6 +32,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define CAPTURENUM 32
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -49,6 +50,13 @@ UART_HandleTypeDef huart2;
 /* USER CODE BEGIN PV */
 uint64_t _micros = 0;
 
+//DNA Buffer
+uint32_t capturedata[CAPTURENUM] = {0};
+//diff time
+uint32_t DiffTime[CAPTURENUM-1] = {0};
+//Mean time
+float Meantime = 0;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -60,6 +68,7 @@ static void MX_TIM2_Init(void);
 static void MX_TIM5_Init(void);
 /* USER CODE BEGIN PFP */
 uint64_t micros();
+void EncoderSpeedReader();
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -111,6 +120,8 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+	EncoderSpeedReader();
+
 	if(micros()-timestamp > 100000)
 	{
 		timestamp = micros();
@@ -363,6 +374,19 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 	}
 }
 
+
+/////////////////////////////////////////////////////////////
+
+void EncoderSpeedReader()
+{
+	uint8_t CapPos = CAPTURENUM - __HAL_DMA_GET_COUNTER(htim2.hdma[TIM_DMA_ID_CC1]);
+	uint32_t sum=0;
+	for(register int i=0 ; i< CAPTURENUM-1 ; i++)
+	{
+		DiffTime[i]=8;
+
+	}
+}
 /* USER CODE END 4 */
 
 /**
