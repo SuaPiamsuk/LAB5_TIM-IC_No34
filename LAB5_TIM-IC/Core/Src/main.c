@@ -56,6 +56,8 @@ uint32_t capturedata[CAPTURENUM] = {0};
 uint32_t DiffTime[CAPTURENUM-1] = {0};
 //Mean time
 float Meantime = 0;
+//RPM
+float omega=0;
 
 /* USER CODE END PV */
 
@@ -111,6 +113,10 @@ int main(void)
   /* USER CODE BEGIN 2 */
   HAL_TIM_Base_Start_IT(&htim5);
   uint64_t timestamp = 0;
+
+  //start DMA
+  HAL_TIM_Base_Start(&htim2);
+  HAL_TIM_IC_Start_DMA(&htim2, TIM_CHANNEL_1, &capturedata, CAPTURENUM);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -127,6 +133,8 @@ int main(void)
 		timestamp = micros();
 		HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
 	}
+
+	omega = (60000000/(Meantime*12))/64.0;
   }
   /* USER CODE END 3 */
 }
@@ -379,13 +387,19 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
 void EncoderSpeedReader()
 {
-	uint8_t CapPos = CAPTURENUM - __HAL_DMA_GET_COUNTER(htim2.hdma[TIM_DMA_ID_CC1]);
+	uint8_t CapPos = CAPTURENUM - __HAL_DMA_GET_COUNTER(htim2.hdma[TIM_DMA_ID_CC1]); //32 - ช่องที่เหลือ
 	uint32_t sum=0;
 	for(register int i=0 ; i< CAPTURENUM-1 ; i++)
 	{
-		DiffTime[i]=8;
-
+		DiffTime[i]= capturedata[(CapPos+1+i)%CAPTURENUM]-capturedata[(CapPos+i)%CAPTURENUM];
+		if(DiffTime[i] < 0)
+		{
+			DiffTime[i]+=4294967295;
+		}
+		sum+=DiffTime[i];
 	}
+	//Mean all 32
+	Meantime = sum/(float)(CAPTURENUM-1);
 }
 /* USER CODE END 4 */
 
