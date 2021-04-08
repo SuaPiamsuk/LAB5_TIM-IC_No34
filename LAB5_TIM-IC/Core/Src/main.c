@@ -352,15 +352,16 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 uint64_t micros()
 {
-	return htim5.Instance->CNT;
+	return _micros + htim5.Instance->CNT;
 }
-//void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
-//{
-//	if(htim == &htim5)
-//	{
-//		_micros+=4294967295;
-//	}
-//}
+
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+	if(htim == &htim5)
+	{
+		_micros+=4294967295; //32bits
+	}
+}
 
 /* USER CODE END 4 */
 
